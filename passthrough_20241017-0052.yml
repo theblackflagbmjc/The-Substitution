@@ -1,0 +1,23 @@
+MODEL_NAME = "TheSubstitution-XYXXYY-Passthrough"
+yaml_config = """
+slices:
+  - sources:
+      - model: ramgpt/ramgpt-13b
+        layer_range: [0, 32]
+      - model: Yoxas/autotrain-phi3-statistical
+        layer_range: [0, 32]
+      - model: DecisionOptimizationSystem/DeepFeatEmbeddingLargeContext
+        layer_range: [0, 32]
+      - model: MaziyarPanahi/phi-2-super-GGUF
+        layer_range: [0, 32]
+      - model: xlangai/BRIGHT
+        layer_range: [0, 32]
+      - model: xlangai/BRIGHT
+        layer_range: [0, 32]
+      - model: upskyy/gte-base-korean
+        layer_range: [0, 32]
+      - model: efederici/e5-base-multilingual-4096
+        layer_range: [0, 32]
+merge_method: passthrough
+dtype: bfloat16
+"""

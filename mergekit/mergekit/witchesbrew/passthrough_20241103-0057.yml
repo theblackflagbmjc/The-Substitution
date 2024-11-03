@@ -1,0 +1,14 @@
+implicit keys: MODEL_NAME = "TheSubstitution-XYXXYYX" yaml_config = """
+slices:
+  - sources:
+      - model: Badsims/sentis-phi-3.5-mini-instruct-uint8
+        layer_range: [0, 32]
+      - model: koodi-ai/math-llama-2.5
+        layer_range: [0, 32]
+merge_method: passthrough
+base_model: Badsims/sentis-phi-3.5-mini-instruct-uint8
+parameters:
+  t:
+    - value: [0, 0.5, 0.3, 0.7, 1]
+    - value: [1, 0.5, 0.7, 0.3, 0]
+dtype: bfloat16"""

@@ -1,0 +1,35 @@
+┌──(.venv)─(silence㉿ragamuffin)-[~/The-Substitution/mergekit-main]
+└─$ mergekit-yaml witchesbrew/slerp_20241102-1336.yml ./witchesbrew --cuda --lazy-unpickle --allow-crimes 
+Traceback (most recent call last):
+  File "/home/silence/The-Substitution/mergekit-main/.venv/bin/mergekit-yaml", line 5, in <module>
+    from mergekit.scripts.run_yaml import main
+  File "/home/silence/The-Substitution/mergekit-main/mergekit/scripts/run_yaml.py", line 21, in <module>
+    from mergekit.config import MergeConfiguration
+  File "/home/silence/The-Substitution/mergekit-main/mergekit/config.py", line 23, in <module>
+    from mergekit.tokenizer.config import TokenizerConfig
+  File "/home/silence/The-Substitution/mergekit-main/mergekit/tokenizer/__init__.py", line 18, in <module>
+    from mergekit.tokenizer.embed import PermutedEmbeddings
+  File "/home/silence/The-Substitution/mergekit-main/mergekit/tokenizer/embed.py", line 23, in <module>
+    from mergekit.io.tasks import GatherTensors
+  File "/home/silence/The-Substitution/mergekit-main/mergekit/io/tasks.py", line 7, in <module>
+    from mergekit.architecture import WeightInfo
+  File "/home/silence/The-Substitution/mergekit-main/mergekit/architecture.py", line 353, in <module>
+    JSON_ARCHITECTURES, NAME_TO_ARCH = _load_all_architectures()
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/silence/The-Substitution/mergekit-main/mergekit/architecture.py", line 343, in _load_all_architectures
+    architectures.append(_load_json_arch(f))
+                         ^^^^^^^^^^^^^^^^^^
+  File "/home/silence/The-Substitution/mergekit-main/mergekit/architecture.py", line 331, in _load_json_arch
+    text = importlib.resources.read_text(mergekit._data.architectures, name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/resources/_legacy.py", line 25, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/resources/_legacy.py", line 80, in read_text
+    return fp.read()
+           ^^^^^^^^^
+  File "<frozen codecs>", line 322, in decode
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xb0 in position 37: invalid start byte
+                                                                                                                                                            
+┌──(.venv)─(silence㉿ragamuffin)-[~/The-Substitution/mergekit-main]
+└─$ 

@@ -9,7 +9,7 @@ if [ -d ".venv" ]; then
 fi
 
 # Create a new virtual environment with Python 3.12
-python3 -m venv .venv
+python3.13 -m venv .venv
 
 # Activate the virtual environment
 source .venv/bin/activate
@@ -17,8 +17,7 @@ source .venv/bin/activate
 # Upgrade pip and install necessary dependencies via pip
 pip install --upgrade pip
 brew update
-brew upgrade
-pipx install yq
+sudo brew upgrade
 pip install transformers
 pip install torch
 pip install safetensors

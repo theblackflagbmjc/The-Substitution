@@ -3,7 +3,7 @@ slices:
   - sources:
       - model: ArmurAI/Pentest_AI
         layer_range: [0, 32]
-      - model: ramgpt/ramgpt-13b-awq-gemm
+      - model: PocketDoc/Dans-PersonalityEngine-v1.0.0-8b
         layer_range: [0, 32]
 merge_method: slerp
 base_model: ArmurAI/Pentest_AI
@@ -21,7 +21,7 @@ dtype: bfloat16
 #   - sources:
 #       - model: ArmurAI/Pentest_AI
 #         layer_range: [0, 32]
-#       - model: ramgpt/ramgpt-13b-awq-gemm
+#       - model: PocketDoc/Dans-PersonalityEngine-v1.0.0-8b
 #         layer_range: [0, 32]
 # merge_method: slerp
 # base_model: ArmurAI/Pentest_AI

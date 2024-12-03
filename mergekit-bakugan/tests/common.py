@@ -31,7 +31,9 @@ def run_and_check_merge(
 
         if check_nan:
             # check for NaN in output
-            loader = LazyTensorLoader.from_disk(tmpdir, lazy_unpickle=False)
+            loader = LazyTensorLoader(
+                ShardedTensorIndex.from_disk(tmpdir), lazy_unpickle=False
+            )
             tp = loader.index.tensor_paths
             sorted_tensors = sorted(tp.keys(), key=lambda k: tp[k])
             for tensor_name in sorted_tensors:
@@ -44,8 +46,8 @@ def run_and_check_merge(
             arch_info = get_architecture_info(config)
 
             index = ShardedTensorIndex.from_disk(tmpdir)
-            for weight_info in arch_info.all_weights(config):
-                if weight_info.name not in index.tensor_paths:
+            for tensor_name in arch_info.all_weights(config):
+                if tensor_name not in index.tensor_paths:
                     raise RuntimeError(f"Output missing tensor {tensor_name}")
 
         if validate:

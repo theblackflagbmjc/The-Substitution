@@ -1,0 +1,51 @@
+MODEL_NAME: "TheSubstitutionXYXXYYX-mistral-Slurpee-Xb"
+slices:
+  - sources:
+      - model: ArmurAI/Pentest_AI
+        layer_range: [0, 32]
+      - model: ramgpt/ramgpt-13b-awq-gemm
+        layer_range: [0, 32]
+merge_method: slerp
+base_model: ArmurAI/Pentest_AI
+parameters:
+  t:
+    - filter: self_attn
+      value: [0, 0.5, 0.3, 0.7, 1]
+    - filter: mlp
+      value: [1, 0.5, 0.7, 0.3, 0]
+    - value: 0.5
+dtype: bfloat16
+# MODEL_NAME = "TheSubstitutionXYXXYYX-mistral-Slurpee-Xb"
+# yaml_config = """
+# slices:
+#   - sources:
+#       - model: ArmurAI/Pentest_AI
+#         layer_range: [0, 32]
+#       - model: ramgpt/ramgpt-13b-awq-gemm
+#         layer_range: [0, 32]
+# merge_method: slerp
+# base_model: ArmurAI/Pentest_AI
+# parameters:
+#   t:
+#     - filter: self_attn
+#       value: [0, 0.5, 0.3, 0.7, 1]
+#     - filter: mlp
+#       value: [1, 0.5, 0.7, 0.3, 0]
+#     - value: 0.5
+# dtype: bfloat16
+# """
+# 
+# ===========
+# 
+# HuggingFace Mergekit GUI URL:
+# https://huggingface.co/spaces/jackboot/mergekit-gui
+# 
+# LazyMergeKit URL:
+# https://colab.research.google.com/drive/1obulZ1ROXHjYLn6PPZJwRR6GzgQogxxb?usp=sharing#scrollTo=LGd7jlfCpNcg
+# 
+# Write Token (TBF-w): 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
+# Write Token (TBF-w-b): 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
+# Read Token (TBF-r): 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
+# Repo Name: GatheringBricks
+# 
+# Successfully merged in Lazy MergeKit 12/3/24 and uploaded to HF with initial dataset Granther/evil-jailbreak for sampling parallel to alternate builds.

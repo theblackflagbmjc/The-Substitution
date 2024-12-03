@@ -13,9 +13,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
 
-import logging
 import os
-from typing import Generator, List, Optional
+from typing import List, Optional, Sequence
 
 import huggingface_hub
 import yaml
@@ -50,26 +49,6 @@ The following YAML configuration was used to produce this model:
 ```
 """
 
-CARD_TEMPLATE_LORA = """---
-{metadata}
----
-# {name}
-
-This is a LoRA extracted from a language model. It was extracted using [mergekit](https://github.com/arcee-ai/mergekit).
-
-## LoRA Details
-
-{details}
-
-### Parameters
-
-The following command was used to extract this LoRA adapter:
-
-```sh
-{invocation}
-```
-"""
-
 
 def is_hf(path: str) -> bool:
     """
@@ -88,7 +67,7 @@ def is_hf(path: str) -> bool:
         return False
 
 
-def extract_hf_paths(models: List[ModelReference]) -> Generator[str, None, None]:
+def extract_hf_paths(models: List[ModelReference]) -> Sequence[str]:
     """
     Yields all valid Hugging Face paths from a list of ModelReference objects.
 
@@ -117,7 +96,6 @@ def method_md(merge_method: str) -> str:
         "task_arithmetic": "[task arithmetic](https://arxiv.org/abs/2212.04089)",
         "dare_ties": "[DARE](https://arxiv.org/abs/2311.03099) [TIES](https://arxiv.org/abs/2306.01708)",
         "dare_linear": "linear [DARE](https://arxiv.org/abs/2311.03099)",
-        "model_stock": "[Model Stock](https://arxiv.org/abs/2403.19522)",
     }
     return methods.get(merge_method, merge_method)
 
@@ -187,61 +165,10 @@ def generate_card(
         model_bullets.append("* " + modelref_md(model))
 
     return CARD_TEMPLATE.format(
-        metadata=yaml.dump(
-            {"base_model": hf_bases, "tags": tags, "library_name": "transformers"}
-        ),
+        metadata=yaml.dump({"base_model": hf_bases, "tags": tags}),
         model_list="\n".join(model_bullets),
         base_text=base_text,
         merge_method=method_md(config.merge_method),
         name=name,
         config_yaml=config_yaml,
-    )
-
-
-def generate_card_lora(
-    base_model_ref: ModelReference,
-    finetuned_model_ref: ModelReference,
-    invocation: str,
-    extended: bool,
-    vocab_size: int,
-    name: str,
-) -> str:
-    """
-    Generates a markdown card for a merged model configuration.
-
-    Args:
-        config: A MergeConfiguration object.
-        config_yaml: YAML source text of the config.
-        name: An optional name for the model.
-    """
-    if not name:
-        name = "Untitled LoRA Model (1)"
-
-    hf_bases = list(extract_hf_paths([base_model_ref, finetuned_model_ref]))
-    tags = ["mergekit", "peft"]
-
-    finetuned_ref_md = modelref_md(finetuned_model_ref)
-    basemodel_ref_md = modelref_md(base_model_ref)
-
-    details = f"This LoRA adapter was extracted from {finetuned_ref_md} and uses {basemodel_ref_md} as a base."
-
-    if extended:
-        details += f"\n\n> [!WARNING]\n> This LoRA adapter has an extended vocabulary. Make sure to call `model.resize_token_embeddings({vocab_size})` before applying the adapter to {basemodel_ref_md}"
-
-    if os.path.isdir(base_model_ref.model.path) or os.path.isdir(
-        finetuned_model_ref.model.path
-    ):
-        logging.warning(
-            "Some model identifiers you provided are directory paths and will appear as such in the model card, you may want to edit it."
-        )
-
-    return CARD_TEMPLATE_LORA.format(
-        metadata=yaml.dump(
-            {"base_model": hf_bases, "tags": tags, "library_name": "transformers"}
-        ),
-        name=name,
-        details=details,
-        base_model=base_model_ref.model.path,
-        finetuned_model=finetuned_model_ref.model.path,
-        invocation=invocation,
     )

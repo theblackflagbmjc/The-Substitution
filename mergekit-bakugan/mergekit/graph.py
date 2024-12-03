@@ -146,7 +146,7 @@ class Executor:
         self.schedule = self._make_schedule(tasks)
         self.targets = tasks
 
-    def run(self, quiet: bool = False) -> Iterator[Tuple[Task, Any]]:
+    def run(self) -> Iterator[Tuple[Task, Any]]:
         """
         Execute the computed schedule and yield the target values.
 
@@ -163,13 +163,7 @@ class Executor:
                 last_use_index[task] = idx
 
         values: Dict[Task, Any] = {}
-        for idx, task in (
-            pbar := tqdm.tqdm(
-                list(enumerate(self.schedule)),
-                disable=quiet,
-                desc="Executing graph",
-            )
-        ):
+        for idx, task in tqdm.tqdm(enumerate(self.schedule), total=len(self.schedule)):
             use_math_device = task.uses_accelerator()
 
             arguments = {}
@@ -214,9 +208,6 @@ class Executor:
 
             for key in expired:
                 del values[key]
-
-        del values
-        del pbar
 
     def execute(self) -> None:
         """

@@ -21,14 +21,10 @@ import torch
 from pydantic import BaseModel
 from typing_extensions import Literal
 
-from mergekit.architecture import WeightInfo
 from mergekit.common import ImmutableMap, ModelReference
 from mergekit.graph import Task
-from mergekit.merge_methods.base import (
-    ConfigParameterDef,
-    MergeMethod,
-    MergeTensorInput,
-)
+from mergekit.io.tasks import GatherTensors
+from mergekit.merge_methods.base import ConfigParameterDef, MergeMethod
 from mergekit.sparsify import SparsificationMethod, sparsify
 
 
@@ -41,7 +37,6 @@ class GeneralizedTaskArithmeticMerge(MergeMethod, BaseModel, frozen=True):
     consensus_method: Optional[ConsensusMethod]
     sparsification_method: Optional[SparsificationMethod]
     default_normalize: bool
-    default_rescale: bool
 
     def parameters(self) -> List[ConfigParameterDef]:
         return [
@@ -49,42 +44,18 @@ class GeneralizedTaskArithmeticMerge(MergeMethod, BaseModel, frozen=True):
             ConfigParameterDef(
                 name="normalize", required=False, default_value=self.default_normalize
             ),
-            ConfigParameterDef(
-                name="rescale", required=False, default_value=self.default_rescale
-            ),
         ]
 
     def tensor_parameters(self) -> List[ConfigParameterDef]:
-        res = [
+        return [
             ConfigParameterDef(name="weight", required=True),
             ConfigParameterDef(name="density", required=False, default_value=1.0),
         ]
-        if self.sparsification_method == SparsificationMethod.magnitude_outliers:
-            res.append(
-                ConfigParameterDef(
-                    name="gamma",
-                    default_value=0.01,
-                )
-            )
-        if self.sparsification_method == SparsificationMethod.rank_magnitude_sampling:
-            res.append(
-                ConfigParameterDef(
-                    name="epsilon",
-                    default_value=0.15,
-                )
-            )
-            res.append(
-                ConfigParameterDef(
-                    name="lambda",
-                    default_value=1.0,
-                )
-            )
-        return res
 
     def make_task(
         self,
-        output_weight: WeightInfo,
-        tensors: MergeTensorInput,
+        output_tensor_name: str,
+        tensors: GatherTensors,
         base_model: Optional[ModelReference],
         parameters: ImmutableMap[str, Any],
         tensor_parameters: ImmutableMap[ModelReference, ImmutableMap[str, Any]],
@@ -96,20 +67,18 @@ class GeneralizedTaskArithmeticMerge(MergeMethod, BaseModel, frozen=True):
             tensor_parameters=tensor_parameters,
             int8_mask=parameters["int8_mask"],
             normalize=parameters["normalize"],
-            rescale=parameters["rescale"],
-            weight_info=output_weight,
+            out_tensor_name=output_tensor_name,
         )
 
 
 class GTATask(Task[torch.Tensor]):
     method: GeneralizedTaskArithmeticMerge
-    tensors: MergeTensorInput
+    tensors: GatherTensors
     base_model: ModelReference
-    weight_info: WeightInfo
+    out_tensor_name: str
     tensor_parameters: ImmutableMap[ModelReference, Any]
     int8_mask: bool
     normalize: bool
-    rescale: bool
 
     def uses_accelerator(self) -> bool:
         return True
@@ -124,7 +93,7 @@ class GTATask(Task[torch.Tensor]):
     ) -> torch.Tensor:
         # collect task vectors
         tvs, base = get_task_vectors(
-            self.weight_info,
+            self.out_tensor_name,
             self.base_model,
             tensors,
             tensor_parameters=self.tensor_parameters.data,
@@ -135,19 +104,10 @@ class GTATask(Task[torch.Tensor]):
         # sparsify
         if self.method.sparsification_method:
             for tv_info in tvs:
-                kwargs = {}
-                if "gamma" in tv_info:
-                    kwargs["gamma"] = tv_info["gamma"]
-
-                if "epsilon" in tv_info:
-                    kwargs["epsilon"] = tv_info["epsilon"]
-
                 tv_info["delta"] = sparsify(
                     tv_info["delta"],
                     density=tv_info["density"],
                     method=self.method.sparsification_method,
-                    rescale=self.rescale,
-                    **kwargs,
                 )
 
         deltas = torch.stack([tv["delta"] for tv in tvs], dim=0)
@@ -178,29 +138,17 @@ class GTATask(Task[torch.Tensor]):
         if self.normalize:
             mixed_delta /= divisor
 
-        if (
-            self.method.sparsification_method
-            == SparsificationMethod.rank_magnitude_sampling
-        ):
-            lambda_factor = tvs[0]["lambda"]
-            mixed_delta *= lambda_factor
-
         return (base + mixed_delta).to(base.dtype)
-
-    def group_label(self) -> Optional[str]:
-        return self.tensors.group_label()
 
 
 def get_task_vectors(
-    weight_info: WeightInfo,
+    parameter_name: str,
     base_model: ModelReference,
     tensors: ImmutableMap[ModelReference, torch.Tensor],
     tensor_parameters: ImmutableMap[ModelReference, ImmutableMap[str, Any]],
 ) -> Tuple[List[Dict[str, Any]], torch.Tensor]:
     keys = list(tensors.keys())
     base = tensors[base_model]
-
-    parameter_name = weight_info.name
 
     res = []
     for model in keys:
@@ -209,7 +157,7 @@ def get_task_vectors(
 
         x = tensors[model].to(base.dtype)
         if x.shape != base.shape:
-            if weight_info.is_embed:
+            if "lm_head" in parameter_name or "embed_tokens" in parameter_name:
                 x = x[: base.shape[0], : base.shape[1]]
                 logging.warning(f"Using submatrix of {model}:{parameter_name}")
             else:
@@ -247,7 +195,7 @@ def get_mask(
     sign = delta.sign().to(mask_dtype)
 
     if method == "sum":
-        sign_weight = delta.sum(dim=0)
+        sign_weight = (sign * delta.abs()).sum(dim=0)
         majority_sign = (sign_weight >= 0).to(mask_dtype) * 2 - 1
         del sign_weight
     elif method == "count":

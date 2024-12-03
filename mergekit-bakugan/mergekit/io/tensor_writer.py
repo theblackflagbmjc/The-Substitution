@@ -29,7 +29,6 @@ class TensorWriter:
     weight_map = Dict[str, str]
     current_shard: Dict[str, torch.Tensor]
     current_shard_size: int
-    total_size: int
     safe_serialization: bool
 
     def __init__(
@@ -47,13 +46,9 @@ class TensorWriter:
         self.weight_map = {}
         self.current_shard = {}
         self.current_shard_size = 0
-        self.total_size = 0
 
     def save_tensor(self, name: str, tensor: torch.Tensor, clone: bool = False):
-        if not tensor.is_contiguous():
-            tensor = tensor.contiguous()
-
-        tensor_size = tensor.numel() * tensor.element_size()
+        tensor_size = tensor.view(-1).shape[0]
         if (
             self.current_shard
             and self.current_shard_size + tensor_size > self.max_shard_size
@@ -64,7 +59,6 @@ class TensorWriter:
             tensor = tensor.clone()
 
         self.current_shard[name] = tensor
-        self.total_size += tensor_size
         self.current_shard_size += tensor_size
 
     def flush_current_shard(self):
@@ -75,7 +69,6 @@ class TensorWriter:
 
         prefix, extension = self._get_name_components()
         shard_name = f"{prefix}-{self.shards_written+1}.{extension}"
-
         for key in self.current_shard:
             self.weight_map[key] = shard_name
 
@@ -120,10 +113,7 @@ class TensorWriter:
         ) as file:
             json.dump(
                 {
-                    "metadata": {
-                        "mergekit_version": "0.0.5.1",
-                        "total_size": self.total_size,
-                    },
+                    "metadata": {"mergekit_version": "0.0.4"},
                     "weight_map": self.weight_map,
                 },
                 file,

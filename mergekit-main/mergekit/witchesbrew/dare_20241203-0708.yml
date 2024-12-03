@@ -1,0 +1,34 @@
+MODEL_NAME: "TheSubstitutionXYXXYYX-mistral-Dare-Me-BET-Xb"
+models:
+  - model: ArmurAI/Pentest_AI
+    # No parameters necessary for base model
+  - model: allenai/open-instruct-self-instruct-7b
+    parameters:
+      density: 0.53
+      weight: 0.4
+  - model: codellama/CodeLlama-70b-Python-hf
+    parameters:
+      density: 0.53
+      weight: 0.3
+  - model: ramgpt/ramgpt-13b-awq-gemm
+    parameters:
+      density: 0.53
+      weight: 0.3
+merge_method: dare_ties
+base_model: ArmurAI/Pentest_AI
+parameters:
+  int8_mask: true
+dtype: bfloat16
+# 
+# ===========
+# 
+# HuggingFace Mergekit GUI URL:
+# https://huggingface.co/spaces/jackboot/mergekit-gui
+# 
+# LazyMergeKit URL:
+# https://colab.research.google.com/drive/1obulZ1ROXHjYLn6PPZJwRR6GzgQogxxb?usp=sharing#scrollTo=LGd7jlfCpNcg
+# 
+# Write Token (TBF-w): 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
+# Write Token (TBF-w-b): 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
+# Read Token (TBF-r): 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
+# Repo Name: GatheringBricks

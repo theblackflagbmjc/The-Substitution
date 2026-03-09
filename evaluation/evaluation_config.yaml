@@ -1,0 +1,64 @@
+# ==============================================================================
+# The Substitution v1.0.0 — Evaluation Configuration
+# Brandon Michael Jeanpierre Corporation d/b/a The Black Flag
+# Organization: theblackflagbmjc
+# ==============================================================================
+
+# --- Benchmarks ---
+benchmarks:
+  humaneval:
+    enabled: true
+    dataset: "openai/openai_humaneval"
+    split: "test"
+    metric: "pass@1"
+    max_new_tokens: 512
+    temperature: 0.0          # Greedy decoding for pass@1
+    num_samples: null          # null = use all 164 problems
+    timeout_seconds: 10        # Per-problem execution timeout
+    description: "Python code generation — 164 hand-written problems"
+
+  gsm8k:
+    enabled: true
+    dataset: "openai/gsm8k"
+    config: "main"
+    split: "test"
+    metric: "accuracy"
+    max_new_tokens: 512
+    temperature: 0.0
+    num_samples: null          # null = use all ~1,319 problems
+    description: "Grade school math — multi-step reasoning"
+
+  mmlu:
+    enabled: true
+    dataset: "cais/mmlu"
+    config: "all"
+    split: "test"
+    metric: "accuracy"
+    max_new_tokens: 5          # Only need a single letter
+    temperature: 0.0
+    num_samples: null          # null = use all ~14,042 questions
+    description: "57-subject multitask knowledge benchmark"
+
+# --- Generation Defaults ---
+generation:
+  max_new_tokens: 512
+  temperature: 0.0
+  do_sample: false
+  top_p: 1.0
+  repetition_penalty: 1.0
+
+# --- Reporting ---
+reporting:
+  output_dir: "./output/evaluation"
+  save_details: true           # Save per-example results
+  save_predictions: true       # Save model outputs
+  format: "json"
+
+# --- Baseline Comparisons ---
+# Reference scores for Qwen2.5-7B-Instruct (approximate, from published benchmarks)
+# Used for comparison in the evaluation report.
+baselines:
+  qwen2.5_7b_instruct:
+    humaneval: 79.9
+    gsm8k: 82.6
+    mmlu: 74.2

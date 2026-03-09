@@ -1,0 +1,62 @@
+# ==============================================================================
+# The Substitution v1.0.0 — LoRA / QLoRA Configuration
+# Brandon Michael Jeanpierre Corporation d/b/a The Black Flag
+# Organization: theblackflagbmjc
+#
+# LoRA (Low-Rank Adaptation) configuration for parameter-efficient fine-tuning
+# of Qwen2.5-7B-Instruct.
+#
+# Architecture: Qwen2 (qwen2)
+# Strategy: QLoRA — 4-bit base model + LoRA adapters
+#
+# Memory footprint estimate (M1Pro 32GB):
+#   Base model (4-bit):  ~4.0 GB
+#   LoRA adapters:       ~0.2 GB
+#   Optimizer states:    ~2.0 GB
+#   Activations (GC):    ~4.0 GB
+#   Overhead:            ~2.0 GB
+#   Total:              ~12.2 GB (fits in 32GB with headroom)
+# ==============================================================================
+
+lora:
+  # --- Core LoRA Parameters ---
+  r: 64                        # Rank of the low-rank matrices
+                                # Higher rank = more capacity but more memory
+                                # 64 is a good balance for 7B models
+
+  lora_alpha: 128               # Scaling factor (alpha/r = effective LR multiplier)
+                                # alpha = 2 * r is a common heuristic
+                                # This gives an effective scaling of 128/64 = 2.0
+
+  lora_dropout: 0.05            # Dropout on LoRA layers for regularization
+                                # Prevents overfitting on smaller datasets
+
+  # --- Target Modules ---
+  # "all-linear" applies LoRA to all linear layers in the transformer,
+  # matching the QLoRA paper's recommendation for best performance.
+  # For Qwen2, this includes:
+  #   - q_proj, k_proj, v_proj (attention projections)
+  #   - o_proj (attention output)
+  #   - gate_proj, up_proj, down_proj (MLP layers)
+  target_modules: "all-linear"
+
+  # --- Task Configuration ---
+  task_type: "CAUSAL_LM"       # Causal language modeling (autoregressive)
+  bias: "none"                 # Don't train bias parameters (saves memory)
+
+  # --- Modules to Save ---
+  # These modules are fully trained (not LoRA-adapted):
+  # embed_tokens and lm_head are saved if they need updating,
+  # but for QLoRA with the base tokenizer unchanged, we skip them.
+  modules_to_save: null
+
+  # --- Advanced ---
+  fan_in_fan_out: false        # Standard linear layers (not Conv1D)
+  inference_mode: false        # Training mode (set true for inference only)
+
+# --- Trainable Parameters Estimate ---
+# With r=64 and all-linear targeting on Qwen2.5-7B:
+#   Total params:      ~7.6B
+#   Trainable params:  ~160M (~2.1% of total)
+#   This is enough capacity for domain specialization while
+#   preserving the base model's general capabilities.

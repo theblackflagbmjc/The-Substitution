@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=75.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "the-substitution"
+version = "1.0.0"
+description = "Enterprise Systems Engineering LLM — The Substitution"
+readme = "model_card/README.md"
+license = {text = "Proprietary — Brandon Michael Jeanpierre Corporation d/b/a The Black Flag"}
+requires-python = ">=3.11"
+authors = [
+    {name = "Brandon Michael Jeanpierre", email = "brandon.jeanpierre@theblackflag.org"},
+]
+
+[project.urls]
+Organization = "https://theblackflag.org"
+Repository = "https://huggingface.co/theblackflagbmjc/the-substitution"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]

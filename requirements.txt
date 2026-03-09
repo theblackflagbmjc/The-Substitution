@@ -1,0 +1,54 @@
+# ==============================================================================
+# The Substitution v1.0.0 — Dependency Manifest
+# Brandon Michael Jeanpierre Corporation d/b/a The Black Flag
+# Organization: theblackflagbmjc
+# ==============================================================================
+
+# Core ML Framework
+torch>=2.2.0
+torchvision>=0.17.0
+torchaudio>=2.2.0
+
+# Hugging Face Ecosystem
+transformers>=4.45.0
+datasets>=3.0.0
+tokenizers>=0.20.0
+accelerate>=1.0.0
+peft>=0.13.0
+trl>=0.12.0
+huggingface_hub>=0.26.0
+safetensors>=0.4.0
+
+# Quantization
+bitsandbytes>=0.44.0
+auto-gptq>=0.7.0
+
+# Training Utilities
+wandb>=0.18.0
+tensorboard>=2.18.0
+scipy>=1.14.0
+scikit-learn>=1.5.0
+sentencepiece>=0.2.0
+
+# Evaluation
+lm-eval>=0.4.0
+rouge-score>=0.1.2
+nltk>=3.9.0
+
+# API Server
+fastapi>=0.115.0
+uvicorn>=0.32.0
+pydantic>=2.9.0
+
+# Data Processing
+pandas>=2.2.0
+pyarrow>=18.0.0
+tqdm>=4.66.0
+
+# Utilities
+pyyaml>=6.0.0
+jsonlines>=4.0.0
+requests>=2.32.0
+python-dotenv>=1.0.0
+psutil>=6.0.0
+rich>=13.9.0

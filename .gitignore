@@ -1,0 +1,59 @@
+# ==============================================================================
+# The Substitution v1.0.0 — Git Ignore
+# ==============================================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+the-substitution-env/
+venv/
+.venv/
+
+# Environment
+.env
+
+# Data (large files managed by git-lfs or downloaded at runtime)
+data/raw/
+data/processed/
+data/tokenized/
+
+# Model Outputs
+output/
+checkpoints/
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.gguf
+
+# Logs
+logs/
+*.log
+wandb/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Temporary
+tmp/
+temp/

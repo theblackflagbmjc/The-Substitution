@@ -109,7 +109,8 @@ bash bootstrap/verify_environment.sh
 ### 3. Authenticate with Hugging Face
 
 ```bash
-huggingface-cli login
+hf auth logout #clear session
+hf auth login #fresh login with access token
 ```
 
 Token available at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).

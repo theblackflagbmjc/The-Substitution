@@ -15,7 +15,7 @@ model:
   base_model: "Qwen/Qwen2.5-7B-Instruct"
   model_type: "causal_lm"
   trust_remote_code: true
-  torch_dtype: "bfloat16"
+  dtype: "bfloat16"
 
 # --- Quantization (QLoRA) ---
 # 4-bit quantization reduces the 7B model from ~14GB to ~4GB in memory,
@@ -83,4 +83,3 @@ training:
   dataloader_num_workers: 4
   dataloader_pin_memory: true
   remove_unused_columns: true
-  group_by_length: true

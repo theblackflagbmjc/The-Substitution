@@ -104,7 +104,7 @@ def load_model_for_eval(
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
             trust_remote_code=True,
-            torch_dtype=dtype,
+            dtype=dtype,
             device_map="auto" if device == "cuda" else {"": device},
         )
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
@@ -121,7 +121,7 @@ def load_model_for_eval(
         model = AutoModelForCausalLM.from_pretrained(
             base_model_name,
             trust_remote_code=True,
-            torch_dtype=dtype,
+            dtype=dtype,
             device_map="auto" if device == "cuda" else {"": device},
         )
 

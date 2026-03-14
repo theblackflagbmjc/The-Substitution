@@ -141,12 +141,12 @@ def load_base_model(
         # MPS: Load in bfloat16 (no bitsandbytes support on macOS)
         # Training still works with LoRA — just uses more memory than QLoRA
         console.print("  Precision: bfloat16 (MPS — no quantization)")
-        load_kwargs["torch_dtype"] = torch.bfloat16
+        load_kwargs["dtype"] = torch.bfloat16
         load_kwargs["device_map"] = {"": "mps"}
     else:
         # CPU fallback
         console.print("  Precision: float32 (CPU fallback)")
-        load_kwargs["torch_dtype"] = torch.float32
+        load_kwargs["dtype"] = torch.float32
 
     model = AutoModelForCausalLM.from_pretrained(**load_kwargs)
 
@@ -263,7 +263,6 @@ def build_training_args(train_config: dict, output_dir: str) -> TrainingArgument
         dataloader_num_workers=tc.get("dataloader_num_workers", 4),
         dataloader_pin_memory=tc.get("dataloader_pin_memory", True),
         remove_unused_columns=tc.get("remove_unused_columns", True),
-        group_by_length=tc.get("group_by_length", True),
     )
 
     return args
@@ -439,7 +438,7 @@ if __name__ == "__main__":
         base_model = AutoModelForCausalLM.from_pretrained(
             model_name,
             trust_remote_code=True,
-            torch_dtype=torch.bfloat16,
+            dtype=torch.bfloat16,
             device_map="auto",
         )
 

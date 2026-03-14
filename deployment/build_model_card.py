@@ -154,7 +154,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 model = AutoModelForCausalLM.from_pretrained(
     "theblackflagbmjc/the-substitution",
     trust_remote_code=True,
-    torch_dtype="auto",
+    dtype="auto",
     device_map="auto",
 )
 tokenizer = AutoTokenizer.from_pretrained(

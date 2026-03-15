@@ -184,8 +184,9 @@ def load_inference_model(model_path: str = None, adapter_path: str = None):
         dtype = torch.float32
         logger.info("CPU device")
 
-    if model_path and Path(model_path).exists():
-        logger.info(f"Loading merged model: {model_path}")
+    if model_path:
+        # Accepts local path or HuggingFace model ID
+        logger.info(f"Loading model: {model_path}")
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
             trust_remote_code=True,

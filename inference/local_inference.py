@@ -93,8 +93,12 @@ def load_model(
         train_config = yaml.safe_load(f)
     base_model_name = train_config["model"]["base_model"]
 
-    if model_path and Path(model_path).exists():
-        console.print(f"  Loading merged model: {model_path}")
+    if model_path:
+        # model_path can be a local directory OR a HuggingFace model ID
+        # (e.g., "theblackflagbmjc/the-substitution")
+        is_local = Path(model_path).exists()
+        source = "local" if is_local else "HuggingFace Hub"
+        console.print(f"  Loading model from {source}: {model_path}")
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
             trust_remote_code=True,

@@ -3,11 +3,13 @@
 # Brandon Michael Jeanpierre Corporation d/b/a The Black Flag
 # Organization: theblackflagbmjc
 #
-# This configuration is tuned for the target hardware:
-#   MacBook Pro M1Pro 2021 | 32GB RAM | 1TB storage
+# LOCAL TRAINING PROFILE (M1Pro 32GB):
+#   25K examples, 1 epoch, seq_length 2048 — ~4-5 days on Apple Silicon.
 #
-# For NVIDIA GPU systems, adjust batch_size and gradient_accumulation_steps
-# based on available VRAM. The effective batch size should remain ~32.
+# CLOUD PROFILE (NVIDIA A100):
+#   Uncomment the cloud overrides at the bottom of this file,
+#   re-run prepare_training_data.py with full dataset caps,
+#   and set num_train_epochs to 3. Finishes in ~24-48 hours.
 # ==============================================================================
 
 # --- Model ---
@@ -18,8 +20,9 @@ model:
   dtype: "bfloat16"
 
 # --- Quantization (QLoRA) ---
-# 4-bit quantization reduces the 7B model from ~14GB to ~4GB in memory,
-# making training feasible on the M1Pro 32GB target hardware.
+# 4-bit quantization via bitsandbytes — CUDA only.
+# On MPS (Apple Silicon), the training script auto-skips quantization
+# and loads in bfloat16 + LoRA instead.
 quantization:
   load_in_4bit: true
   bnb_4bit_compute_dtype: "bfloat16"
@@ -29,27 +32,25 @@ quantization:
 # --- Data ---
 data:
   tokenized_dataset_path: "./data/tokenized"
-  max_seq_length: 4096
+  max_seq_length: 2048        # Halved from 4096 for local training speed
 
 # --- Training Hyperparameters ---
-# These are tuned for the M1Pro 32GB environment.
-# Effective batch size = per_device_batch_size * gradient_accumulation_steps = 1 * 32 = 32
 training:
   output_dir: "./output/the-substitution-v1"
-  num_train_epochs: 3
+  num_train_epochs: 1         # Single pass — sufficient for 25K curated examples
   per_device_train_batch_size: 1
   per_device_eval_batch_size: 1
-  gradient_accumulation_steps: 32
+  gradient_accumulation_steps: 16   # Effective batch size: 16
   learning_rate: 2.0e-4
   weight_decay: 0.01
-  warmup_ratio: 0.03
+  warmup_ratio: 0.05          # 5% warmup — slightly longer for single epoch
   lr_scheduler_type: "cosine"
   max_grad_norm: 1.0
 
   # Precision
   bf16: true
   fp16: false
-  tf32: false  # Not available on Apple Silicon
+  tf32: false                 # Not available on Apple Silicon
 
   # Memory optimization
   gradient_checkpointing: true
@@ -60,14 +61,14 @@ training:
   logging_first_step: true
   log_level: "info"
 
-  # Evaluation
+  # Evaluation — every ~250 steps (~1,500 total steps expected)
   eval_strategy: "steps"
-  eval_steps: 500
+  eval_steps: 250
 
-  # Checkpointing
+  # Checkpointing — save 5 checkpoints across the run
   save_strategy: "steps"
-  save_steps: 500
-  save_total_limit: 3
+  save_steps: 250
+  save_total_limit: 5
   load_best_model_at_end: true
   metric_for_best_model: "eval_loss"
   greater_is_better: false
@@ -76,10 +77,23 @@ training:
   seed: 42
   data_seed: 42
 
-  # Reporting
-  report_to: "wandb"
+  # Reporting — tensorboard only (no wandb prompt)
+  report_to: "none"
 
   # Performance
   dataloader_num_workers: 4
   dataloader_pin_memory: true
   remove_unused_columns: true
+
+# ==============================================================================
+# CLOUD OVERRIDES (uncomment when running on NVIDIA GPU):
+# ==============================================================================
+# data:
+#   max_seq_length: 4096
+# training:
+#   num_train_epochs: 3
+#   gradient_accumulation_steps: 32
+#   eval_steps: 500
+#   save_steps: 500
+#   save_total_limit: 3
+#   report_to: "wandb"

@@ -58,30 +58,35 @@ console = Console()
 #   - instruction datasets are primary (general capability)
 #   - coding is critical for the systems engineering role
 #   - math supports reasoning ability
+#
+# LOCAL TRAINING PROFILE (M1Pro 32GB):
+#   25,000 total examples — feasible in ~5 days on Apple Silicon.
+#   When cloud GPU becomes available, remove the max_samples caps and
+#   set num_train_epochs back to 3 in training_config.yaml.
 SAMPLING_CONFIG = {
     "openhermes_cleaned.jsonl": {
-        "weight": 1.0,      # Full inclusion — highest quality instruction data
-        "max_samples": None,
+        "weight": 1.0,      # Highest quality instruction data
+        "max_samples": 8_000,
         "category": "instruction",
     },
     "ultrachat_cleaned.jsonl": {
-        "weight": 0.5,      # Subsample — complementary multi-turn data
-        "max_samples": 250_000,
+        "weight": 1.0,      # Multi-turn dialogue capability
+        "max_samples": 4_000,
         "category": "instruction",
     },
     "openorca_cleaned.jsonl": {
-        "weight": 0.5,      # Subsample — complementary reasoning data
-        "max_samples": 250_000,
+        "weight": 1.0,      # Reasoning and instruction following
+        "max_samples": 5_000,
         "category": "instruction",
     },
     "codesearchnet_cleaned.jsonl": {
-        "weight": 1.0,      # Full inclusion — critical for code capability
-        "max_samples": None,
+        "weight": 1.0,      # Code generation — critical for role
+        "max_samples": 6_000,
         "category": "coding",
     },
     "gsm8k_cleaned.jsonl": {
-        "weight": 3.0,      # Oversample — small dataset, high value for reasoning
-        "max_samples": None,
+        "weight": 1.0,      # Math reasoning (full train set is ~7.5K, take 2K)
+        "max_samples": 2_000,
         "category": "math",
     },
 }

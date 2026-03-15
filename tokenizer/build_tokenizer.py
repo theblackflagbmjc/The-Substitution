@@ -57,7 +57,14 @@ console = Console()
 
 # --- Load config from environment or defaults ---
 BASE_MODEL = os.getenv("BASE_MODEL", "Qwen/Qwen2.5-7B-Instruct")
-MAX_SEQ_LENGTH = 4096  # Context window for training
+# --- Load max_seq_length from training config ---
+_train_config_path = PROJECT_ROOT / "training" / "training_config.yaml"
+if _train_config_path.exists():
+    with open(_train_config_path, "r") as _f:
+        _train_config = yaml.safe_load(_f)
+    MAX_SEQ_LENGTH = _train_config.get("data", {}).get("max_seq_length", 2048)
+else:
+    MAX_SEQ_LENGTH = 2048
 NUM_PROC = os.cpu_count() or 4
 
 

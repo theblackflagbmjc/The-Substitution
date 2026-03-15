@@ -238,7 +238,7 @@ def build_training_args(train_config: dict, output_dir: str) -> TrainingArgument
         gradient_accumulation_steps=tc.get("gradient_accumulation_steps", 32),
         learning_rate=tc.get("learning_rate", 2e-4),
         weight_decay=tc.get("weight_decay", 0.01),
-        warmup_ratio=tc.get("warmup_ratio", 0.03),
+        warmup_steps=tc.get("warmup_steps", 100),
         lr_scheduler_type=tc.get("lr_scheduler_type", "cosine"),
         max_grad_norm=tc.get("max_grad_norm", 1.0),
         bf16=tc.get("bf16", True),
@@ -338,6 +338,18 @@ def main():
     # --- Build Training Arguments ---
     training_args = build_training_args(train_config, output_dir)
 
+    # Compute warmup_steps from warmup_ratio if not explicitly set in config
+    tc = train_config.get("training", train_config)
+    if "warmup_ratio" in tc and "warmup_steps" not in tc:
+        total_steps = (
+            len(train_dataset)
+            // training_args.per_device_train_batch_size
+            // training_args.gradient_accumulation_steps
+            * int(training_args.num_train_epochs)
+        )
+        training_args.warmup_steps = max(1, int(total_steps * tc["warmup_ratio"]))
+        console.print(f"  Warmup steps (from {tc['warmup_ratio']} ratio): {training_args.warmup_steps}")
+
     # Adjust for compute backend
     if compute_backend == "mps":
         # MPS doesn't support some operations
@@ -360,7 +372,7 @@ def main():
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
         data_collator=data_collator,
     )
 
